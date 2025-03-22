@@ -27,8 +27,11 @@ Within the Data Layer, there is support for both network and local data. And all
 ![Events](assets/events_report.png)
 
 2) App Crash
-<video controls><source src="assets/crash.mov"></video>
-<video controls><source src="assets/database_crash.mov"></video>
+
+[Crash Recording](assets/crash.mov)
+
+[Database Crash Recording](assets/database_crash.mov)
+
 ![App Structure](assets/crash_report.png)
 
 3) Network Performance
