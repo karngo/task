@@ -35,12 +35,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.task.analytics.AppEvent
 import com.example.task.data.database.entity.Task
 import com.example.task.ui.theme.TaskTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(modifier: Modifier, homeViewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    modifier: Modifier,
+    homeViewModel: HomeViewModel = viewModel(),
+    logEvent: (AppEvent) -> Unit
+) {
     val tasks by homeViewModel.tasks.collectAsState()
     var isDialogVisible by remember { mutableStateOf(false) }
     val composableScope = rememberCoroutineScope()
@@ -69,6 +74,9 @@ fun HomeScreen(modifier: Modifier, homeViewModel: HomeViewModel = viewModel()) {
                 ) {
                     Checkbox(checked = task.isCompleted, onCheckedChange = {
                         composableScope.launch {
+                            if (!task.isCompleted)
+                                logEvent(AppEvent("task_completed"))
+
                             homeViewModel.toggleTaskCompleted(task)
                         }
                     })
@@ -94,10 +102,13 @@ fun HomeScreen(modifier: Modifier, homeViewModel: HomeViewModel = viewModel()) {
         EnterTaskDialog(activeTask, onDismiss = { isDialogVisible = false }) {
             isDialogVisible = false
             composableScope.launch {
-                if (isEditing)
+                if (isEditing) {
                     homeViewModel.updateTask(it)
-                else
+                    logEvent(AppEvent("task_edited"))
+                } else {
                     homeViewModel.addTask(it)
+                    logEvent(AppEvent("task_added"))
+                }
             }
         }
 }
@@ -106,7 +117,7 @@ fun HomeScreen(modifier: Modifier, homeViewModel: HomeViewModel = viewModel()) {
 @Composable
 fun HomeScreenPreview() {
     TaskTheme {
-        HomeScreen(modifier = Modifier)
+        HomeScreen(modifier = Modifier, logEvent = {})
     }
 }
 

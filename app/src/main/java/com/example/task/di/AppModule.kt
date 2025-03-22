@@ -2,10 +2,14 @@ package com.example.task.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.task.analytics.AppAnalytics
+import com.example.task.analytics.FirebaseAnalytics
 import com.example.task.data.TaskRepository
 import com.example.task.data.TaskRepositoryImpl
 import com.example.task.data.database.AppDatabase
 import com.example.task.data.network.ApiService
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.analytics
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,5 +42,11 @@ object AppModule {
     @Provides
     fun provideTaskRepository(apiService: ApiService, appDatabase: AppDatabase): TaskRepository {
         return TaskRepositoryImpl(apiService, appDatabase)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppAnalytics(): AppAnalytics {
+        return FirebaseAnalytics(Firebase.analytics)
     }
 }
