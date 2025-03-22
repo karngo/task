@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.task.data.TaskRepository
 import com.example.task.data.database.entity.Task
-import com.example.task.data.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +19,24 @@ class HomeViewModel @Inject constructor(private val taskRepository: TaskReposito
     fun getTasks() {
         viewModelScope.launch(Dispatchers.IO) {
             _tasks.value = taskRepository.getAllTasks()
+        }
+    }
+
+    fun addTask(task: Task) {
+        viewModelScope.launch(Dispatchers.IO) {
+            taskRepository.addTask(task)
+            getTasks()
+        }
+    }
+
+    fun toggleTaskCompleted(task: Task) {
+        updateTask(task.copy(isCompleted = !task.isCompleted))
+    }
+
+    fun updateTask(task: Task) {
+        viewModelScope.launch(Dispatchers.IO) {
+            taskRepository.updateTask(task)
+            getTasks()
         }
     }
 }

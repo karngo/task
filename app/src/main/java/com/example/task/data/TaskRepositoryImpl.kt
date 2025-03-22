@@ -5,7 +5,7 @@ import com.example.task.data.database.entity.Task
 import com.example.task.data.network.ApiService
 import javax.inject.Inject
 
-class TaskRepositoryImpl @Inject constructor (
+class TaskRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
     private val appDatabase: AppDatabase
 ) : TaskRepository {
@@ -21,11 +21,13 @@ class TaskRepositoryImpl @Inject constructor (
         appDatabase.getTaskDao().insertAll(*fetchedTasks.toTypedArray())
 
         return fetchedTasks
-
-        return emptyList()
     }
 
     override suspend fun addTask(task: Task) {
-        TODO("Not yet implemented")
+        appDatabase.getTaskDao().insertTask(task)
+    }
+
+    override suspend fun updateTask(task: Task) {
+        appDatabase.getTaskDao().updateTask(task)
     }
 }

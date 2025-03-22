@@ -10,8 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -21,33 +26,64 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.task.data.database.entity.Task
 import com.example.task.ui.theme.TaskTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(modifier: Modifier, homeViewModel: HomeViewModel = viewModel()) {
     val tasks by homeViewModel.tasks.collectAsState()
     var isDialogVisible by remember { mutableStateOf(false) }
+    val composableScope = rememberCoroutineScope()
+
+    var activeTask by remember { mutableStateOf(Task(todo = "")) }
+    var isEditing by remember { mutableStateOf(false) }
 
     LaunchedEffect(true) {
         homeViewModel.getTasks()
     }
 
     Column(modifier) {
-        TextButton(onClick = { isDialogVisible = true }) {
+        TextButton(onClick = {
+            activeTask = Task(todo = "")
+            isEditing = false
+            isDialogVisible = true
+        }) {
             Text(text = "+ Add new task")
         }
 
         LazyColumn {
-            items(tasks) { article ->
-                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp)) {
-                    Text(text = article.todo ?: "", fontWeight = FontWeight.Bold)
+            items(tasks) { task ->
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(checked = task.isCompleted, onCheckedChange = {
+                        composableScope.launch {
+                            homeViewModel.toggleTaskCompleted(task)
+                        }
+                    })
+                    Text(
+                        text = task.todo ?: "",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = {
+                        activeTask = task
+                        isEditing = true
+                        isDialogVisible = true
+                    }) {
+                        Icon(imageVector = Icons.Filled.Create, contentDescription = "Edit task")
+                    }
                 }
                 HorizontalDivider(thickness = 1.dp)
             }
@@ -55,8 +91,14 @@ fun HomeScreen(modifier: Modifier, homeViewModel: HomeViewModel = viewModel()) {
     }
 
     if (isDialogVisible)
-        AddTaskDialog(text = "", onDismiss = { isDialogVisible = false }) {
+        EnterTaskDialog(activeTask, onDismiss = { isDialogVisible = false }) {
             isDialogVisible = false
+            composableScope.launch {
+                if (isEditing)
+                    homeViewModel.updateTask(it)
+                else
+                    homeViewModel.addTask(it)
+            }
         }
 }
 
@@ -69,8 +111,8 @@ fun HomeScreenPreview() {
 }
 
 @Composable
-fun AddTaskDialog(text: String, onDismiss: () -> Unit, onSave: (newText: String) -> Unit) {
-    var taskText by remember { mutableStateOf(text) }
+fun EnterTaskDialog(task: Task, onDismiss: () -> Unit, onSave: (task: Task) -> Unit) {
+    var taskText by remember { mutableStateOf(task.todo) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -81,7 +123,7 @@ fun AddTaskDialog(text: String, onDismiss: () -> Unit, onSave: (newText: String)
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = {
-                        Text(text = "Enter new task...")
+                        Text(text = "Enter your task...")
                     },
                     value = taskText,
                     onValueChange = { taskText = it })
@@ -90,7 +132,7 @@ fun AddTaskDialog(text: String, onDismiss: () -> Unit, onSave: (newText: String)
                     modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End,
                 ) {
                     TextButton(onClick = onDismiss) { Text("Cancel") }
-                    TextButton(onClick = { onSave(taskText) }) { Text("Confirm") }
+                    TextButton(onClick = { onSave(task.copy(todo = taskText)) }) { Text("Confirm") }
                 }
             }
         }
@@ -99,9 +141,9 @@ fun AddTaskDialog(text: String, onDismiss: () -> Unit, onSave: (newText: String)
 
 @Preview(showBackground = true)
 @Composable
-fun AddTaskDialogPreview() {
+fun EnterTaskDialogPreview() {
     TaskTheme {
-        AddTaskDialog(text = "Enter new task...", onSave = {}, onDismiss = {})
+        EnterTaskDialog(Task(todo = "Enter new task..."), onSave = {}, onDismiss = {})
     }
 }
 
