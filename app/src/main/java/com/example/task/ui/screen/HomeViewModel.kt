@@ -39,4 +39,10 @@ class HomeViewModel @Inject constructor(private val taskRepository: TaskReposito
             getTasks()
         }
     }
+
+    fun crashDb() {
+        viewModelScope.launch(Dispatchers.IO) {
+            taskRepository.insertCrash()
+        }
+    }
 }

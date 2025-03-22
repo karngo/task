@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
@@ -58,12 +60,25 @@ fun HomeScreen(
     }
 
     Column(modifier) {
-        TextButton(onClick = {
-            activeTask = Task(todo = "")
-            isEditing = false
-            isDialogVisible = true
-        }) {
-            Text(text = "+ Add new task")
+        Row {
+            TextButton(onClick = {
+                activeTask = Task(todo = "")
+                isEditing = false
+                isDialogVisible = true
+            }) {
+                Text(text = "+ Add new task")
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(onClick = {
+                throw RuntimeException("Test crash")
+            }) {
+                Icon(imageVector = Icons.Default.Warning, contentDescription = "Test crash button")
+            }
+            IconButton(onClick = {
+                homeViewModel.crashDb()
+            }) {
+                Icon(imageVector = Icons.Default.Face, contentDescription = "Test db crash button")
+            }
         }
 
         LazyColumn {

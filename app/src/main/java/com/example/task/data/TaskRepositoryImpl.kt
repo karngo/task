@@ -30,4 +30,8 @@ class TaskRepositoryImpl @Inject constructor(
     override suspend fun updateTask(task: Task) {
         appDatabase.getTaskDao().updateTask(task)
     }
+
+    override suspend fun insertCrash() {
+        appDatabase.getTaskDao().insertCrash(Task(id = 1, todo = ""))
+    }
 }
