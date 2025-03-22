@@ -1,6 +1,6 @@
-package com.example.task.data
+package com.example.task.data.network
 
-import com.example.task.data.model.TaskResponse
+import com.example.task.data.network.model.TaskResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
